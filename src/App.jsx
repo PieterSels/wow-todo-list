@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "./style.css";
 
+import ClearButtons from "./components/clear-buttons";
+import AddTaskForm from "./components/add-task-form";
+import FilterSection from "./components/filter-section";
+import TaskTable from "./components/task-table";
+
 function App() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState(() => {
+    const saved = localStorage.getItem("todos");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [input, setInput] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
   const [frequency, setFrequency] = useState("");
@@ -14,27 +22,21 @@ function App() {
   const frequencies = ["Daily", "Weekly", "Monthly"];
 
   const thStyle = {
-  borderBottom: "2px solid #ccc",
-  padding: "8px",
-  textAlign: "left",
-};
+    borderBottom: "2px solid #ccc",
+    padding: "8px",
+    textAlign: "left",
+  };
 
-const tdStyle = {
-  borderBottom: "1px solid #eee",
-  padding: "8px",
-};
-
-
-  useEffect(() => {
-    const savedTodos = JSON.parse(localStorage.getItem("todos"));
-    if (savedTodos) {
-      setTodos(savedTodos);
-    }
-  }, []);
+  const tdStyle = {
+    borderBottom: "1px solid #eee",
+    padding: "8px",
+  };
 
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
+
+  
 
   const addTodo = () => {
     if (input.trim() === "" || assignedTo === "" || frequency === "") return;
@@ -56,6 +58,7 @@ const tdStyle = {
   };
 
   const resetCompleted = (targetFrequency) => {
+    console.log("Resetting:", targetFrequency);
     const updatedTodos = todos.map((todo) => {
       if (todo.frequency === targetFrequency && todo.completed) {
         return { ...todo, completed: false };
@@ -74,101 +77,41 @@ const tdStyle = {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>📝 Family To-Do List</h2>
+      <h2>📝 Wow To-Do List</h2>
 
-      <div className="clear-buttons">
-        <button onClick={() => resetCompleted("Daily")}>Clear Daily</button>
-        <button onClick={() => resetCompleted("Weekly")}>Clear Weekly</button>
-        <button onClick={() => resetCompleted("Monthly")}>Clear Monthly</button>
-      </div>
+      <ClearButtons resetCompleted={resetCompleted} />
       
-      <div className="add-task-form">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Add a new task"
-        />
-
-        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-          <option value="">Assign to...</option>
-          {familyMembers.map((member) => (
-            <option key={member} value={member}>
-              {member}
-            </option>
-          ))}
-        </select>
-
-        <select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
-          <option value="">Select frequency...</option>
-          {frequencies.map((freq) => (
-            <option key={freq} value={freq}>
-              {freq}
-            </option>
-          ))}
-        </select>
-
-        <button onClick={addTodo}>Add</button>
-      </div>
+      <AddTaskForm
+        input={input}
+        setInput={setInput}
+        assignedTo={assignedTo}
+        setAssignedTo={setAssignedTo}
+        frequency={frequency}
+        setFrequency={setFrequency}
+        familyMembers={familyMembers}
+        frequencies={frequencies}
+        addTodo={addTodo}
+      />
 
       <hr />
-
       <h4>🔍 Filter Tasks</h4>
-      <div className="filter-section">
-        <select value={filterMember} onChange={(e) => setFilterMember(e.target.value)}>
-          <option value="">All members</option>
-          {familyMembers.map((member) => (
-            <option key={member} value={member}>
-              {member}
-            </option>
-          ))}
-        </select>
 
-        <select value={filterFrequency} onChange={(e) => setFilterFrequency(e.target.value)}>
-          <option value="">All frequencies</option>
-          {frequencies.map((freq) => (
-            <option key={freq} value={freq}>
-              {freq}
-            </option>
-          ))}
-        </select>
-      </div>
+      <FilterSection
+        filterMember={filterMember}
+        setFilterMember={setFilterMember}
+        filterFrequency={filterFrequency}
+        setFilterFrequency={setFilterFrequency}
+        familyMembers={familyMembers}
+        frequencies={frequencies}
+      />
 
-
-      <table className="task-table">
-        <thead>
-          <tr>
-            <th style={thStyle}>Task</th>
-            <th style={thStyle}>Assigned To</th>
-            <th style={thStyle}>Frequency</th>
-            <th style={thStyle}>Status</th>
-            <th style={thStyle}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredTodos.map((todo, index) => (
-            <tr key={index}>
-              <td style={tdStyle}>{todo.text}</td>
-              <td style={tdStyle}>{todo.assignedTo}</td>
-              <td style={tdStyle}>{todo.frequency}</td>
-              <td style={tdStyle}>
-                <span
-                  onClick={() => toggleTodo(index)}
-                  style={{
-                    textDecoration: todo.completed ? "line-through" : "none",
-                    cursor: "pointer",
-                    color: todo.completed ? "gray" : "black",
-                  }}
-                >
-                  {todo.completed ? "✅ Done" : "🕒 Pending"}
-                </span>
-              </td>
-              <td style={tdStyle}>
-                <button onClick={() => deleteTodo(index)}>❌ Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TaskTable
+        todos={filteredTodos}
+        thStyle={thStyle}
+        tdStyle={tdStyle}
+        toggleTodo={toggleTodo}
+        deleteTodo={deleteTodo}
+      />
 
     </div>
   );

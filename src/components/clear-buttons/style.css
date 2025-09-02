@@ -1,0 +1,19 @@
+.clear-buttons {
+  margin-bottom: 20px;
+}
+
+.clear-buttons button {
+  margin-right: 12px;
+  padding: 8px 16px;
+  background-color: #72a24d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.clear-buttons button:hover {
+  background-color: #5c8a3d;
+}
